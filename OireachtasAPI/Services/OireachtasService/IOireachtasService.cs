@@ -5,12 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OireachtasAPI.Services
+namespace OireachtasAPI.Services.OireachtasService
 {
     public interface IOireachtasService
     {
         Task<LegislationBase> GetLegislation(int limit);
         Task<MemberBase> GetMember(int limit);
-        Task<string> Get(int limit, Uri url);
+        Task<string> Get(Uri url);
     }
 }

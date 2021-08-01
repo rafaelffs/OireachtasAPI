@@ -9,7 +9,12 @@ namespace OireachtasAPI.Model
 {
     public class Bill
     {
+        [JsonProperty("billNo")]
+        public string BillNo { get; set; }
         [JsonProperty("sponsors")]
         public List<SponsorBase> Sponsors { get; set; }
+        [JsonProperty("lastUpdated")]
+        public DateTime LastUpdated { get; set; }
+
     }
 }

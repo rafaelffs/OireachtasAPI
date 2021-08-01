@@ -2,6 +2,8 @@
 using Newtonsoft.Json;
 using OireachtasAPI.Model;
 using OireachtasAPI.Services;
+using OireachtasAPI.Services.BillService;
+using OireachtasAPI.Services.OireachtasService;
 using OireachtasAPI.Utils;
 using System;
 using System.Collections.Generic;
@@ -14,43 +16,77 @@ namespace OireachtasAPI
 {
     public class Program
     {
-        public static string LEGISLATION_DATASET = "legislation.json";
-        public static string MEMBERS_DATASET = "members.json";
-        private static IOireachtasService OireachtasService = new OireachtasService();
-
         static void Main(string[] args)
         {
+            IBillService billService = new BillService();
+            IList<Bill> bills;
+            bool useFile = false;
 
+            Console.WriteLine("Use a local file or connect to Oireachtas API? ");
+            Console.WriteLine("1 - Local file");
+            Console.WriteLine("2 - Oireachtas API");
+
+            string selection = Console.ReadLine();
+            while (selection != "1" && selection != "2")
+            {
+                Console.WriteLine("Wrong option");
+                selection = Console.ReadLine();
+            }
+            switch (selection)
+            {
+                case "1":
+                    useFile = true;
+                    break;
+                case "2":
+                    useFile = false;
+                    break;
+            }
+            Console.WriteLine("Please select a option: ");
+            Console.WriteLine("1 - FilterBillsSponsoredBy");
+            Console.WriteLine("2 - FilterBillsByLastUpdated");
+            switch (Console.ReadLine())
+            {
+                case "1":
+                    Console.WriteLine("pID: ");
+                    var pID = Console.ReadLine();
+                    bills = billService.FilterBillsSponsoredBy(pID, useFile);
+                    WriteBills(bills);
+                    break;
+                case "2":
+                    Console.WriteLine("Since: (dd-mm-yyyy format): ");
+                    string inputSinceData = Console.ReadLine();
+                    Console.WriteLine("Until: (dd-mm-yyyy format): ");
+                    string inputUntilData = Console.ReadLine();
+
+                    if (ValidateDateTime.IsValidDateTime(inputSinceData) && (ValidateDateTime.IsValidDateTime(inputUntilData) || inputUntilData == ""))
+                    {
+                        DateTime since = ValidateDateTime.ConvertInputToDateTime(inputSinceData);
+                        DateTime until = ValidateDateTime.ConvertInputToDateTime(inputUntilData);
+                        bills = billService.FilterBillsByLastUpdated(since, until, useFile);
+                        WriteBills(bills);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid input format.");
+                    }
+                    break;
+                default:
+                    Console.WriteLine("Invalid option. Press any key to continue.");
+                    break;
+            }
+            Console.WriteLine("Press any key to close.");
+            Console.ReadKey();
         }
 
-        /// <summary>
-        /// Return bills sponsored by the member with the specified pId
-        /// </summary>
-        /// <param name="pId">The pId value for the member</param>
-        /// <returns>List of bill records</returns>
-        public static IList<Bill> FilterBillsSponsoredBy(string pId)
+        private static void WriteBills(IList<Bill> bills)
         {
-            LegislationBase legislation = JsonConvert.DeserializeObject<LegislationBase>(JSONLoader.LoadJson(LEGISLATION_DATASET));
-            MemberBase member = JsonConvert.DeserializeObject<MemberBase>(JSONLoader.LoadJson(MEMBERS_DATASET));
-
-            //LegislationBase legislation = OireachtasService.GetLegislation(50).Result;
-            //MemberBase member = OireachtasService.GetMember(50).Result;
-
-            IList<Bill> bills = legislation.Legislations.
-                Where(x => x.Bill.Sponsors.Any(y => member.Members.Any(z => z.Member.PId == pId && z.Member.FullName == y.Sponsor.By.ShowAs)))
-                    .Select(x => x.Bill).ToList();
-            return bills;
+            Console.WriteLine($"Total bills: {bills.Count}");
+            foreach (Bill bill in bills)
+            {
+                Console.WriteLine($"Bill no: {bill.BillNo}");
+            }
+            Console.WriteLine();
         }
 
-        /// <summary>
-        /// Return bills updated within the specified date range
-        /// </summary>
-        /// <param name="since">The lastUpdated value for the bill should be greater than or equal to this date</param>
-        /// <param name="until">The lastUpdated value for the bill should be less than or equal to this date.If unspecified, until will default to today's date</param>
-        /// <returns>List of bill records</returns>
-        public static List<dynamic> filterBillsByLastUpdated(DateTime since, DateTime until)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

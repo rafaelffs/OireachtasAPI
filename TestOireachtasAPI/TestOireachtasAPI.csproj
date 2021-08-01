@@ -53,8 +53,10 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="UnitTest1.cs" />
+    <Compile Include="LoadDatasetTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="BillServiceTest.cs" />
+    <Compile Include="OireachtasServiceTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

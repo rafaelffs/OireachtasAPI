@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OireachtasAPI.Services
+namespace OireachtasAPI.Services.OireachtasService
 {
     public class OireachtasService : IOireachtasService
     {
@@ -35,13 +35,18 @@ namespace OireachtasAPI.Services
             }
             return member;
         }
-        public async Task<string> Get(int limit, Uri url)
+        public async Task<string> Get(Uri url)
         {
-            HttpResponseMessage response = await httpClient.GetAsync(url);
             string data = "";
-            if (response.IsSuccessStatusCode)
+            try
             {
-                data = response.Content.ReadAsStringAsync().Result;
+                HttpResponseMessage response = await httpClient.GetAsync(url);
+                if (response.IsSuccessStatusCode)
+                    data = response.Content.ReadAsStringAsync().Result;
+            }
+            catch (Exception)
+            {
+                
             }
             return data;
         }
